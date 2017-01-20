@@ -19,6 +19,26 @@ class TestBasicStuff(unittest.TestCase):
         self.assertEqual(isinstance(junit.TestSuite(a=1,b=1,c=1), object), True)
         self.assertEqual(isinstance(junit.TestReport(a=1,b=1,c=1), object), True)
 
+    def testTestCaseMethodsPresent(self):
+        """TestCase must contain some assumed methods"""
+        self.assertEqual(set([
+            '__str__',
+        ]).issubset(dir(junit.TestCase)), True)
+
+    def testTestSuiteMethodsPresent(self):
+        """TestSuite must contain some assumed methods"""
+        self.assertEqual(set([
+            '__str__',
+        ]).issubset(dir(junit.TestSuite)), True)
+
+    def testTestReportMethodsPresent(self):
+        """TestReport must contain some assumed methods"""
+        self.assertEqual(set([
+            '__str__',
+            'toXml',
+            'merge',
+        ]).issubset(dir(junit.TestReport)), True)
+
 
 if __name__ == '__main__':
     unittest.main()
