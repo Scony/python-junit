@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-import testCase
-import testSuite
-import testReport
+from . import testCase
+from . import testSuite
+from . import testReport
 
 class TestCase(testCase.TestCase):
     pass
