@@ -1,5 +1,6 @@
 class TestCase(object):
 
+
     def __init__(self, **kwargs):
         self.params = {
             'time': None,
@@ -13,6 +14,7 @@ class TestCase(object):
             'systemErr': None,
         }
         self.params.update(kwargs)
+
 
     def __str__(self):
         return str(self.params)

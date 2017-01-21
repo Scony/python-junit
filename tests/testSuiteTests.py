@@ -121,7 +121,7 @@ class TestTestSuite(unittest.TestCase):
             junit.TestCase(error=True),
         ]
         ts = junit.TestSuite(tcs)
-        self.assertEqual(ts.params['time'], float(1)+float(2)+float('3.3')+float(3.3))
+        self.assertEqual(ts.params['time'], sum([float(1), float(2), float('3.3'), float(3.3)]))
         self.assertEqual(ts.params['tests'], 7)
         self.assertEqual(ts.params['skipped'], 1)
         self.assertEqual(ts.params['failures'], 2)
