@@ -22,20 +22,21 @@ class TestBasicStuff(unittest.TestCase):
     def testTestCaseMethodsPresent(self):
         """TestCase must contain some assumed methods"""
         self.assertEqual(set([
-            '__str__',
+            '__str__',          # exists anyway but we override it
         ]).issubset(dir(junit.TestCase)), True)
 
     def testTestSuiteMethodsPresent(self):
         """TestSuite must contain some assumed methods"""
         self.assertEqual(set([
-            '__str__',
+            '__str__',          # exists anyway but we override it
         ]).issubset(dir(junit.TestSuite)), True)
 
     def testTestReportMethodsPresent(self):
         """TestReport must contain some assumed methods"""
         self.assertEqual(set([
-            '__str__',
+            '__str__',          # exists anyway but we override it
             'toXml',
+            'fromXml',
             'merge',
         ]).issubset(dir(junit.TestReport)), True)
 

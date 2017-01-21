@@ -3,7 +3,12 @@ class TestReport(object):
     def __init__(self, testSuites=None, **kwargs):
         self.params = {
             'time': None,
-            'testSuites': None,
+            'name': None,
+            'tests': None,
+            'failures': None,
+            'disabled': None,
+            'testSuites': [],
+            'timeAggreate': sum,
         }
 
         if testSuites is not None:
@@ -14,5 +19,11 @@ class TestReport(object):
     def toXml(self):
         pass
 
-    def merge(self, otherReport):
+    def fromXml(self, xmlStr):
         pass
+
+    def merge(self, testReport):
+        pass
+
+    def __str__(self):
+        return str(self.params)
