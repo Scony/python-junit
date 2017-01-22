@@ -60,7 +60,7 @@ class TestReport(object):
         self.params.update(kwargs)
 
 
-    def toXml(self):
+    def toXml(self):            # TODO: http://stackoverflow.com/questions/749796/pretty-printing-xml-in-python
         testsuitesAttrib = dict([(key, str(val)) for key, val in self.params.items() if
                                  key in self.attributeNames and
                                  val is not None])
@@ -71,7 +71,14 @@ class TestReport(object):
                                     val is not None])
             testsuiteNode = ET.SubElement(testsuitesNode, 'testsuite', attrib=testsuiteAttrib)
             for testCase in testSuite.params['testCases']:
-                testcaseNode = ET.SubElement(testsuiteNode, 'testcase')
+                testcaseAttrib = dict([(key, str(val)) for key, val in testCase.params.items() if
+                                       key in testCase.attributeNames and
+                                       val is not None])
+                testcaseNode = ET.SubElement(testsuiteNode, 'testcase', attrib=testcaseAttrib)
+                for childName in testCase.childNames.keys():
+                    if testCase.params[childName] is not None:
+                        childNode = ET.SubElement(testcaseNode, testCase.childNames[childName])
+                        childNode.text = str(testCase.params[childName])
 
         return ET.tostring(testsuitesNode, encoding='utf8')
 

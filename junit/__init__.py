@@ -1,5 +1,12 @@
 # -*- coding: utf-8 -*-
 
+"""
+Based on:
+* Personal expiriences with JUnit Jenkins Plugin
+* http://stackoverflow.com/questions/4922867/junit-xml-format-specification-that-hudson-supports
+* https://github.com/kyrus/python-junit-xml
+"""
+
 from . import testCase
 from . import testSuite
 from . import testReport

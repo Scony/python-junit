@@ -100,6 +100,123 @@ class TestXmlCoding(unittest.TestCase):
         self.assertEqual(len(re.findall('<testsuite ', xml)), 2)
         self.assertEqual(len(re.findall('<testcase ', xml)), 4)
 
+    def testComplexEncoding2(self):
+        tr = junit.TestReport([
+            junit.TestSuite([
+                junit.TestCase(name='tc1'),
+                junit.TestCase(name='tc2'),
+            ]),
+            junit.TestSuite([
+                junit.TestCase(name='tc3', status='unknown'),
+                junit.TestCase(),
+            ], name='ts2'),
+        ], name='xyz')
+        xml = tr.toXml()
+        xml = xml.decode('utf-8')
+        self.assertEqual('<testsuites' in xml, True)
+        self.assertEqual('name="xyz"' in xml, True)
+        self.assertEqual('name="ts2"' in xml, True)
+        self.assertEqual('name="tc1"' in xml, True)
+        self.assertEqual('name="tc2"' in xml, True)
+        self.assertEqual('name="tc3"' in xml, True)
+        self.assertEqual('status="unknown"' in xml, True)
+        self.assertEqual(len(re.findall('<testsuite ', xml)), 2)
+        self.assertEqual(len(re.findall('<testcase', xml)), 4)
+
+    def testComplexEncoding3(self):
+        tr = junit.TestReport([
+            junit.TestSuite([
+                junit.TestCase(name='tc1', classname='tc1c'),
+                junit.TestCase(name='tc2', status='unknown', time=5),
+            ]),
+            junit.TestSuite([
+                junit.TestCase(name='tc3', time=1),
+                junit.TestCase(time='5.5'),
+            ], name='ts2'),
+        ], name='xyz')
+        xml = tr.toXml()
+        xml = xml.decode('utf-8')
+        self.assertEqual('<testsuites' in xml, True)
+        self.assertEqual('name="xyz"' in xml, True)
+        self.assertEqual('name="ts2"' in xml, True)
+        self.assertEqual('name="tc1"' in xml, True)
+        self.assertEqual('name="tc2"' in xml, True)
+        self.assertEqual('name="tc3"' in xml, True)
+        self.assertEqual('time="5' in xml, True)
+        self.assertEqual('time="1' in xml, True)
+        self.assertEqual('time="5.5' in xml, True)
+        self.assertEqual('time="6.5' in xml, True)
+        self.assertEqual('time="11.5' in xml, True)
+        self.assertEqual(len(re.findall('<testsuite ', xml)), 2)
+        self.assertEqual(len(re.findall('<testcase ', xml)), 4)
+
+    def testComplexEncoding4(self):
+        tr = junit.TestReport([
+            junit.TestSuite([
+                junit.TestCase(skipped=''),
+                junit.TestCase(failure=''),
+                junit.TestCase(error=''),
+                junit.TestCase(systemOut='', systemErr=''),
+            ]),
+            junit.TestSuite([
+                junit.TestCase(skipped=''),
+                junit.TestCase(failure=''),
+                junit.TestCase(failure=''),
+                junit.TestCase(error=''),
+                junit.TestCase(error=''),
+                junit.TestCase(error=''),
+            ]),
+        ])
+        xml = tr.toXml()
+        xml = xml.decode('utf-8')
+        self.assertEqual(len(re.findall('<testsuites ', xml)), 1)
+        self.assertEqual(len(re.findall('<testsuite ', xml)), 2)
+        self.assertEqual(len(re.findall('<testcase', xml)), 10)
+        self.assertEqual(len(re.findall('<skipped', xml)), 2)
+        self.assertEqual(len(re.findall('<failure', xml)), 3)
+        self.assertEqual(len(re.findall('<error', xml)), 4)
+        self.assertEqual(len(re.findall('<system-out', xml)), 1)
+        self.assertEqual(len(re.findall('<system-err', xml)), 1)
+
+    def testComplexEncoding5(self):
+        tr = junit.TestReport([
+            junit.TestSuite([
+                junit.TestCase(skipped='yes'),
+                junit.TestCase(failure='some_fail'),
+                junit.TestCase(error='some_err'),
+                junit.TestCase(systemOut='some_sout', systemErr='some_serr'),
+            ]),
+            junit.TestSuite([
+                junit.TestCase(skipped='yes'),
+                junit.TestCase(failure='some_fail'),
+                junit.TestCase(failure='some_fail'),
+                junit.TestCase(error='some_err'),
+                junit.TestCase(error='some_err'),
+                junit.TestCase(error='some_err'),
+            ]),
+        ])
+        xml = tr.toXml()
+        xml = xml.decode('utf-8')
+        self.assertEqual(len(re.findall('yes', xml)), 2)
+        self.assertEqual(len(re.findall('some_fail', xml)), 3)
+        self.assertEqual(len(re.findall('some_err', xml)), 4)
+        self.assertEqual(len(re.findall('some_sout', xml)), 1)
+        self.assertEqual(len(re.findall('some_serr', xml)), 1)
+        self.assertEqual(len(re.findall('<testsuites ', xml)), 1)
+        self.assertEqual(len(re.findall('<testsuite ', xml)), 2)
+        self.assertEqual(len(re.findall('<testcase', xml)), 10)
+        self.assertEqual(len(re.findall('<skipped', xml)), 2)
+        self.assertEqual(len(re.findall('<failure', xml)), 3)
+        self.assertEqual(len(re.findall('<error', xml)), 4)
+        self.assertEqual(len(re.findall('<system-out', xml)), 1)
+        self.assertEqual(len(re.findall('<system-err', xml)), 1)
+
+    # TODO: failure message="" type=""
+    # TODO: error message="" type=""
+    # TODO: encode-decode-check
+    # TODO: merge
+    # TODO: decode-merge-check
+
 
 if __name__ == '__main__':
     unittest.main()

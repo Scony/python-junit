@@ -13,6 +13,20 @@ class TestCase(object):
             'systemOut': None,
             'systemErr': None,
         }
+        self.attributeNames = [
+            'time',
+            'classname',
+            'name',
+            'status',
+        ]
+        self.childNames = {
+            'skipped': 'skipped',
+            'failure': 'failure',
+            'error': 'error',
+            'systemOut': 'system-out',
+            'systemErr': 'system-err',
+        }
+
         self.params.update(kwargs)
 
 
