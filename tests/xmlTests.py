@@ -9,12 +9,14 @@ class TestXmlCoding(unittest.TestCase):
     def testSimpleEncoding1(self):
         tr = junit.TestReport(name='xyz')
         xml = tr.toXml()
+        xml = xml.decode('utf-8')
         self.assertEqual('<testsuites' in xml, True)
         self.assertEqual('name="xyz"' in xml, True)
 
     def testSimpleEncoding2(self):
         tr = junit.TestReport(name='xyz')
         xml = tr.toXml()
+        xml = xml.decode('utf-8')
         self.assertEqual('<testsuites' in xml, True)
         self.assertEqual('name="xyz"' in xml, True)
         self.assertEqual('time="' not in xml, True)
@@ -27,6 +29,7 @@ class TestXmlCoding(unittest.TestCase):
                               tests=5,
                               errors='24')
         xml = tr.toXml()
+        xml = xml.decode('utf-8')
         self.assertEqual('<testsuites' in xml, True)
         self.assertEqual('name="xyz"' in xml, True)
         self.assertEqual('time="1.1' in xml, True)
@@ -37,6 +40,7 @@ class TestXmlCoding(unittest.TestCase):
         tss = [junit.TestSuite() for _ in range(3)]
         tr = junit.TestReport(tss, name='xyz')
         xml = tr.toXml()
+        xml = xml.decode('utf-8')
         self.assertEqual('<testsuites' in xml, True)
         self.assertEqual('name="xyz"' in xml, True)
         self.assertEqual(len(re.findall('<testsuite ', xml)), 3)
@@ -48,6 +52,7 @@ class TestXmlCoding(unittest.TestCase):
             junit.TestSuite(name='ccc', time=21),
         ], name='xyz')
         xml = tr.toXml()
+        xml = xml.decode('utf-8')
         self.assertEqual('<testsuites' in xml, True)
         self.assertEqual('name="xyz"' in xml, True)
         self.assertEqual('name="aaa"' in xml, True)
@@ -65,6 +70,7 @@ class TestXmlCoding(unittest.TestCase):
             junit.TestSuite(time=10),
         ], name='xyz')
         xml = tr.toXml()
+        xml = xml.decode('utf-8')
         self.assertEqual('<testsuites' in xml, True)
         self.assertEqual('name="xyz"' in xml, True)
         self.assertEqual('tests="5"' in xml, True)
@@ -88,6 +94,7 @@ class TestXmlCoding(unittest.TestCase):
             ]),
         ], name='xyz')
         xml = tr.toXml()
+        xml = xml.decode('utf-8')
         self.assertEqual('<testsuites' in xml, True)
         self.assertEqual('name="xyz"' in xml, True)
         self.assertEqual(len(re.findall('<testsuite ', xml)), 2)
