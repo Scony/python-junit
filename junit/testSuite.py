@@ -12,6 +12,14 @@ class TestSuite(object):
             'testCases': [],
             'timeAggregate': sum,
         }
+        self.attributeNames = [
+            'time',
+            'name',
+            'tests',
+            'skipped',
+            'failures',
+            'errors',
+        ]
 
         if 'timeAggregate' in kwargs and kwargs['timeAggregate'] is not None:
             self.params['timeAggregate'] = kwargs['timeAggregate']

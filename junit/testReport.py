@@ -1,3 +1,6 @@
+import xml.etree.ElementTree as ET
+
+
 class TestReport(object):
 
 
@@ -7,10 +10,19 @@ class TestReport(object):
             'name': None,
             'tests': None,
             'failures': None,
+            'errors': None,
             'disabled': None,
             'testSuites': [],
             'timeAggregate': sum,
         }
+        self.attributeNames = [
+            'time',
+            'name',
+            'tests',
+            'failures',
+            'errors',
+            'disabled',
+        ]
 
         if 'timeAggregate' in kwargs and kwargs['timeAggregate'] is not None:
             self.params['timeAggregate'] = kwargs['timeAggregate']
@@ -49,7 +61,17 @@ class TestReport(object):
 
 
     def toXml(self):
-        pass
+        testsuitesAttrib = dict([(key, str(val)) for key, val in self.params.items() if
+                            key in self.attributeNames and
+                            val is not None])
+        testsuitesNode = ET.Element('testsuites', attrib=testsuitesAttrib)
+        for testSuite in self.params['testSuites']:
+            testsuiteAttrib = dict([(key, str(val)) for key, val in testSuite.params.items() if
+                                    key in testSuite.attributeNames and
+                                    val is not None])
+            testsuiteNode = ET.SubElement(testsuitesNode, 'testsuite', attrib=testsuiteAttrib)
+
+        return ET.tostring(testsuitesNode, encoding='utf8', method='xml')
 
 
     def fromXml(self, xmlStr):
