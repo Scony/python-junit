@@ -73,7 +73,7 @@ class TestReport(object):
             for testCase in testSuite.params['testCases']:
                 testcaseNode = ET.SubElement(testsuiteNode, 'testcase')
 
-        return ET.tostring(testsuitesNode, encoding='utf8', method='xml')
+        return ET.tostring(testsuitesNode, encoding='utf8')
 
 
     def fromXml(self, xmlStr):
