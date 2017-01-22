@@ -62,14 +62,16 @@ class TestReport(object):
 
     def toXml(self):
         testsuitesAttrib = dict([(key, str(val)) for key, val in self.params.items() if
-                            key in self.attributeNames and
-                            val is not None])
+                                 key in self.attributeNames and
+                                 val is not None])
         testsuitesNode = ET.Element('testsuites', attrib=testsuitesAttrib)
         for testSuite in self.params['testSuites']:
             testsuiteAttrib = dict([(key, str(val)) for key, val in testSuite.params.items() if
                                     key in testSuite.attributeNames and
                                     val is not None])
             testsuiteNode = ET.SubElement(testsuitesNode, 'testsuite', attrib=testsuiteAttrib)
+            for testCase in testSuite.params['testCases']:
+                testcaseNode = ET.SubElement(testsuiteNode, 'testcase')
 
         return ET.tostring(testsuitesNode, encoding='utf8', method='xml')
 

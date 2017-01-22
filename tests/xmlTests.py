@@ -84,6 +84,24 @@ class TestXmlCoding(unittest.TestCase):
         self.assertEqual('time="18.1' in xml, True)
         self.assertEqual(len(re.findall('<testsuite ', xml)), 3)
 
+    def testComplexEncoding1(self):
+        tr = junit.TestReport([
+            junit.TestSuite([
+                junit.TestCase(),
+                junit.TestCase(),
+            ]),
+            junit.TestSuite([
+                junit.TestCase(),
+                junit.TestCase(),
+            ]),
+        ], name='xyz')
+        xml = tr.toXml()
+        self.assertEqual(isinstance(xml, str), True)
+        self.assertEqual('<testsuites' in xml, True)
+        self.assertEqual('name="xyz"' in xml, True)
+        self.assertEqual(len(re.findall('<testsuite ', xml)), 2)
+        self.assertEqual(len(re.findall('<testcase ', xml)), 4)
+
 
 if __name__ == '__main__':
     unittest.main()
