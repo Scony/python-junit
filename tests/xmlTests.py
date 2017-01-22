@@ -46,12 +46,11 @@ class TestXmlCoding(unittest.TestCase):
         self.assertEqual(len(re.findall('<testsuite ', xml)), 3)
 
     def testCompoundEncoding2(self):
-        tss = [
+        tr = junit.TestReport([
             junit.TestSuite(name='aaa', errors=5),
             junit.TestSuite(name='bbb', skipped=7),
             junit.TestSuite(name='ccc', time=21),
-        ]
-        tr = junit.TestReport(tss, name='xyz')
+        ], name='xyz')
         xml = tr.toXml()
         self.assertEqual(isinstance(xml, str), True)
         self.assertEqual('<testsuites' in xml, True)
@@ -65,12 +64,11 @@ class TestXmlCoding(unittest.TestCase):
         self.assertEqual(len(re.findall('<testsuite ', xml)), 3)
 
     def testCompoundEncoding3(self):
-        tss = [
+        tr = junit.TestReport([
             junit.TestSuite(tests=5, time='1.1'),
             junit.TestSuite(tests=7, time=7),
             junit.TestSuite(time=10),
-        ]
-        tr = junit.TestReport(tss, name='xyz')
+        ], name='xyz')
         xml = tr.toXml()
         self.assertEqual(isinstance(xml, str), True)
         self.assertEqual('<testsuites' in xml, True)
