@@ -98,11 +98,11 @@ class TestReport(object):
 
 
     def fromXml(self, xmlStr):
-        pass
+        raise NotImplementedError
 
 
     def merge(self, testReport):
-        pass
+        raise NotImplementedError
 
 
     def __str__(self):
