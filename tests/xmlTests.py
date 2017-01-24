@@ -211,8 +211,79 @@ class TestXmlCoding(unittest.TestCase):
         self.assertEqual(len(re.findall('<system-out', xml)), 1)
         self.assertEqual(len(re.findall('<system-err', xml)), 1)
 
-    # TODO: failure message="" type=""
-    # TODO: error message="" type=""
+    def testComplexEncoding6(self):
+        tr = junit.TestReport([
+            junit.TestSuite([
+                junit.TestCase(failure='some_fail', failure_message='msg', failure_type='type'),
+            ]),
+        ])
+        xml = tr.toXml()
+        xml = xml.decode('utf-8')
+        self.assertEqual(len(re.findall('some_fail', xml)), 1)
+        self.assertEqual(len(re.findall('message="msg"', xml)), 1)
+        self.assertEqual(len(re.findall('type="type"', xml)), 1)
+        self.assertEqual(len(re.findall('<testsuites ', xml)), 1)
+        self.assertEqual(len(re.findall('<testsuite ', xml)), 1)
+        self.assertEqual(len(re.findall('<testcase', xml)), 1)
+        self.assertEqual(len(re.findall('<failure', xml)), 1)
+
+    def testComplexEncoding7(self):
+        tr = junit.TestReport([
+            junit.TestSuite([
+                junit.TestCase(failure_message='msg', failure_type='type'),
+            ]),
+        ])
+        xml = tr.toXml()
+        xml = xml.decode('utf-8')
+        self.assertEqual(len(re.findall('message="msg"', xml)), 1)
+        self.assertEqual(len(re.findall('type="type"', xml)), 1)
+        self.assertEqual(len(re.findall('<testsuites ', xml)), 1)
+        self.assertEqual(len(re.findall('<testsuite ', xml)), 1)
+        self.assertEqual(len(re.findall('<testcase', xml)), 1)
+        self.assertEqual(len(re.findall('<failure', xml)), 1)
+
+    def testComplexEncoding8(self):
+        tr = junit.TestReport([
+            junit.TestSuite([
+                junit.TestCase(error='some_err', error_message='msg', error_type='type'),
+            ]),
+        ])
+        xml = tr.toXml()
+        xml = xml.decode('utf-8')
+        self.assertEqual(len(re.findall('some_err', xml)), 1)
+        self.assertEqual(len(re.findall('message="msg"', xml)), 1)
+        self.assertEqual(len(re.findall('type="type"', xml)), 1)
+        self.assertEqual(len(re.findall('<testsuites ', xml)), 1)
+        self.assertEqual(len(re.findall('<testsuite ', xml)), 1)
+        self.assertEqual(len(re.findall('<testcase', xml)), 1)
+        self.assertEqual(len(re.findall('<error', xml)), 1)
+
+    def testComplexEncoding9(self):
+        tr = junit.TestReport([
+            junit.TestSuite([
+                junit.TestCase(error_message='msg', error_type='type'),
+            ]),
+        ])
+        xml = tr.toXml()
+        xml = xml.decode('utf-8')
+        self.assertEqual(len(re.findall('message="msg"', xml)), 1)
+        self.assertEqual(len(re.findall('type="type"', xml)), 1)
+        self.assertEqual(len(re.findall('<testsuites ', xml)), 1)
+        self.assertEqual(len(re.findall('<testsuite ', xml)), 1)
+        self.assertEqual(len(re.findall('<testcase', xml)), 1)
+        self.assertEqual(len(re.findall('<error', xml)), 1)
+
+    def testComplexEncoding9(self):
+        tr = junit.TestReport([
+            junit.TestSuite([
+                junit.TestCase(error_message='msg', error_type='type'),
+            ]),
+        ])
+        uglyXml = tr.toXml()
+        prettyXml = tr.toXml(prettyPrint=True)
+        self.assertEqual(len(uglyXml) < len(prettyXml), True)
+
+
     # TODO: encode-decode-check
     # TODO: merge
     # TODO: decode-merge-check

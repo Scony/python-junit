@@ -1,4 +1,5 @@
 import xml.etree.ElementTree as ET
+import xml.dom.minidom as MD
 
 
 class TestReport(object):
@@ -60,7 +61,7 @@ class TestReport(object):
         self.params.update(kwargs)
 
 
-    def toXml(self):            # TODO: http://stackoverflow.com/questions/749796/pretty-printing-xml-in-python
+    def toXml(self, prettyPrint=False):
         testsuitesAttrib = dict([(key, str(val)) for key, val in self.params.items() if
                                  key in self.attributeNames and
                                  val is not None])
@@ -76,11 +77,20 @@ class TestReport(object):
                                        val is not None])
                 testcaseNode = ET.SubElement(testsuiteNode, 'testcase', attrib=testcaseAttrib)
                 for childName in testCase.childNames.keys():
-                    if testCase.params[childName] is not None:
-                        childNode = ET.SubElement(testcaseNode, testCase.childNames[childName])
+                    childAttrib = dict([(key.split('_')[1], str(val)) for key, val in testCase.params.items() if
+                                        key.startswith('%s_' % childName) and
+                                        val is not None])
+                    if testCase.params[childName] is not None or len(childAttrib.items()) > 0:
+                        childNode = ET.SubElement(testcaseNode, testCase.childNames[childName], attrib=childAttrib)
                         childNode.text = str(testCase.params[childName])
 
-        return ET.tostring(testsuitesNode, encoding='utf8')
+        uglyXml = ET.tostring(testsuitesNode, encoding='utf8')
+
+        if prettyPrint:
+            xml = MD.parseString(uglyXml)
+            return xml.toprettyxml()
+
+        return uglyXml
 
 
     def fromXml(self, xmlStr):
