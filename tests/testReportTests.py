@@ -119,6 +119,17 @@ class TestTestReport(unittest.TestCase):
         self.assertEqual(tr.params['time'], min([float(1), float(2), float('3.3'), float(3.7)]))
         self.assertEqual(len(tr.params['testSuites']), 4)
 
+    def testParametersCalculation6(self):
+        tss = [
+            junit.TestSuite(errors='3', tests=1),
+            junit.TestSuite(errors=2, tests='2'),
+            junit.TestSuite(errors='xxx', tests=3),
+        ]
+        tr = junit.TestReport(tss)
+        self.assertEqual(tr.params['tests'], 6)
+        self.assertEqual(tr.params['errors'], 5)
+        self.assertEqual(len(tr.params['testSuites']), 3)
+
     def testParametersOverride(self):
         tss = [
             junit.TestSuite(time=1),

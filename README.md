@@ -40,7 +40,7 @@ print report.toXml(prettyPrint=True)
 
 ~~~
 <?xml version="1.0" ?>
-<testsuites failures="1" name="MyReport" tests="5" time="13.2">
+<testsuites errors="1" failures="1" name="MyReport" tests="5" time="13.2">
 	<testsuite errors="1" failures="1" name="suite1" skipped="1" tests="4" time="13.2">
 		<testcase name="test1" time="5.5"/>
 		<testcase name="test2">

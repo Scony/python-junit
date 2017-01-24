@@ -56,6 +56,10 @@ class TestReport(object):
             failuresInSuites = [failures for failures in failuresInSuites if failures is not None]
             self.params['failures'] = sum(failuresInSuites)
 
+            errorsInSuites = [anything2int(ts.params['errors']) for ts in testSuites]
+            errorsInSuites = [errors for errors in errorsInSuites if errors is not None]
+            self.params['errors'] = sum(errorsInSuites)
+
             self.params['testSuites'] = testSuites
 
         self.params.update(kwargs)
