@@ -283,8 +283,87 @@ class TestXmlCoding(unittest.TestCase):
         prettyXml = tr.toXml(prettyPrint=True)
         self.assertEqual(len(uglyXml) < len(prettyXml), True)
 
+    def testEncodingDeterministic(self):
+        tr1 = junit.TestReport([
+            junit.TestSuite([
+                junit.TestCase(skipped='yes'),
+                junit.TestCase(failure='some_fail'),
+                junit.TestCase(error='some_err'),
+                junit.TestCase(systemOut='some_sout', systemErr='some_serr'),
+            ]),
+            junit.TestSuite([
+                junit.TestCase(skipped='yes'),
+                junit.TestCase(failure='some_fail'),
+                junit.TestCase(failure='some_fail'),
+                junit.TestCase(error='some_err'),
+                junit.TestCase(error='some_err'),
+                junit.TestCase(error='some_err'),
+            ]),
+        ])
+        tr2 = junit.TestReport([
+            junit.TestSuite([
+                junit.TestCase(skipped='yes'),
+                junit.TestCase(failure='some_fail'),
+                junit.TestCase(error='some_err'),
+                junit.TestCase(systemOut='some_sout', systemErr='some_serr'),
+            ]),
+            junit.TestSuite([
+                junit.TestCase(skipped='yes'),
+                junit.TestCase(failure='some_fail'),
+                junit.TestCase(failure='some_fail'),
+                junit.TestCase(error='some_err'),
+                junit.TestCase(error='some_err'),
+                junit.TestCase(error='some_err'),
+            ]),
+        ])
+        self.assertEqual(tr1.toXml(), tr2.toXml())
 
-    # TODO: encode-decode-check
+    def testEncodingDecoding1(self):
+        tr1 = junit.TestReport([
+            junit.TestSuite([
+                junit.TestCase(skipped='yes'),
+                junit.TestCase(failure='some_fail'),
+                junit.TestCase(error='some_err'),
+                junit.TestCase(systemOut='some_sout', systemErr='some_serr'),
+            ]),
+            junit.TestSuite([
+                junit.TestCase(skipped='yes'),
+                junit.TestCase(failure='some_fail'),
+                junit.TestCase(failure='some_fail'),
+                junit.TestCase(error='some_err'),
+                junit.TestCase(error='some_err'),
+                junit.TestCase(error='some_err'),
+            ]),
+        ])
+        xml = tr1.toXml()
+        tr2 = junit.TestReport()
+        tr2.fromXml(xml)
+        self.assertEqual(tr1.toRawData(), tr2.toRawData())
+
+
+    def testEncodingDecoding2(self):
+        tr1 = junit.TestReport([
+            junit.TestSuite([
+                junit.TestCase(skipped='yes'),
+                junit.TestCase(failure='some_fail', failure_message='###'),
+                junit.TestCase(error='some_err', error_message='xyz'),
+                junit.TestCase(systemOut='some_sout', systemErr='some_serr'),
+            ]),
+            junit.TestSuite([
+                junit.TestCase(skipped='yes'),
+                junit.TestCase(failure='some_fail'),
+                junit.TestCase(failure='some_fail', failure_message='???'),
+                junit.TestCase(error='some_err'),
+                junit.TestCase(error='some_err'),
+                junit.TestCase(error='some_err'),
+            ]),
+        ])
+        xml = tr1.toXml()
+        tr2 = junit.TestReport()
+        tr2.fromXml(xml)
+        self.assertEqual(tr1.toRawData(), tr2.toRawData())
+
+
     # TODO: merge
     # TODO: decode-merge-check
 

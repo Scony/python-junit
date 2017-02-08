@@ -1,8 +1,15 @@
 import xml.etree.ElementTree as ET
 import xml.dom.minidom as MD
 
+from .testSuite import TestSuite
+from .testCase import TestCase
+
 
 class TestReport(object):
+
+
+    class XmlDecodingFailure(Exception):
+        pass
 
 
     def __init__(self, testSuites=None, **kwargs):
@@ -32,37 +39,32 @@ class TestReport(object):
             testSuites = [testSuites]
 
         if testSuites is not None:
-            def anything2int(anything):
-                try:
-                    return int(anything)
-                except:
-                    return None
-
-            def anything2float(anything):
-                try:
-                    return float(anything)
-                except:
-                    return None
-
-            timesInSuites = [anything2float(ts.params['time']) for ts in testSuites]
-            timesInSuites = [time for time in timesInSuites if time is not None]
-            self.params['time'] = self.params['timeAggregate'](timesInSuites)
-
-            testsInSuites = [anything2int(ts.params['tests']) for ts in testSuites]
-            testsInSuites = [tests for tests in testsInSuites if tests is not None]
-            self.params['tests'] = sum(testsInSuites)
-
-            failuresInSuites = [anything2int(ts.params['failures']) for ts in testSuites]
-            failuresInSuites = [failures for failures in failuresInSuites if failures is not None]
-            self.params['failures'] = sum(failuresInSuites)
-
-            errorsInSuites = [anything2int(ts.params['errors']) for ts in testSuites]
-            errorsInSuites = [errors for errors in errorsInSuites if errors is not None]
-            self.params['errors'] = sum(errorsInSuites)
-
             self.params['testSuites'] = testSuites
+            self._recalculateParams()
 
         self.params.update(kwargs)
+
+
+    def toRawData(self):
+        testReportData = {
+            'testSuites': [],
+        }
+
+        for testSuite in self.params['testSuites']:
+            testSuiteData = {
+                'testCases': [],
+            }
+
+            for testCase in testSuite.params['testCases']:
+                testSuiteData['testCases'].append(testCase.params)
+
+            testSuiteData.update(dict([(k, v) for k, v in testSuite.params.items() if
+                                       k in testSuite.attributeNames]))
+            testReportData['testSuites'].append(testSuiteData)
+
+        testReportData.update(dict([(k, v) for k, v in self.params.items() if k in self.attributeNames]))
+
+        return testReportData
 
 
     def toXml(self, prettyPrint=False):
@@ -98,7 +100,39 @@ class TestReport(object):
 
 
     def fromXml(self, xmlStr):
-        raise NotImplementedError
+        self._clearAttributes()
+
+        root = ET.fromstring(xmlStr)
+        if root.tag != 'testsuites':
+            raise self.XmlDecodingFailure
+
+        self._fillAttributes(root.attrib)
+        self.params['testSuites'] = []
+
+        for child in root:
+            if child.tag == 'testsuite':
+                testSuite = TestSuite()
+                testSuite._fillAttributes(child.attrib)
+
+                for subchild in child:
+                    if subchild.tag == 'testcase':
+                        testCase = TestCase()
+                        testCase._fillAttributes(subchild.attrib)
+
+                        for subsubchild in subchild:
+                            if subsubchild.tag in testCase.childNames.values():
+                                childNamesToParamNames = dict([(v, k) for k, v in testCase.childNames.items()])
+                                paramName = childNamesToParamNames[subsubchild.tag]
+                                testCase.params[paramName] = subsubchild.text
+                                for attributeName, attributeValue in subsubchild.attrib.items():
+                                    testCase.params['%s_%s' % (paramName, attributeName)] = attributeValue
+
+                        testSuite.params['testCases'].append(testCase)
+
+                testSuite._recalculateParams()
+                self.params['testSuites'].append(testSuite)
+
+        self._recalculateParams()
 
 
     def merge(self, testReport):
@@ -107,3 +141,44 @@ class TestReport(object):
 
     def __str__(self):
         return str(self.params)
+
+
+    def _clearAttributes(self):
+        for attributeName in self.attributeNames:
+            self.params[attributeName] = None
+
+
+    def _fillAttributes(self, attributes):
+        for attributeName in self.attributeNames:
+            if attributeName in attributes:
+                self.params[attributeName] = attributes[attributeName]
+
+
+    def _recalculateParams(self):
+        def anything2int(anything):
+            try:
+                return int(anything)
+            except:
+                return None
+
+        def anything2float(anything):
+            try:
+                return float(anything)
+            except:
+                return None
+
+        timesInSuites = [anything2float(ts.params['time']) for ts in self.params['testSuites']]
+        timesInSuites = [time for time in timesInSuites if time is not None]
+        self.params['time'] = self.params['timeAggregate'](timesInSuites)
+
+        testsInSuites = [anything2int(ts.params['tests']) for ts in self.params['testSuites']]
+        testsInSuites = [tests for tests in testsInSuites if tests is not None]
+        self.params['tests'] = sum(testsInSuites)
+
+        failuresInSuites = [anything2int(ts.params['failures']) for ts in self.params['testSuites']]
+        failuresInSuites = [failures for failures in failuresInSuites if failures is not None]
+        self.params['failures'] = sum(failuresInSuites)
+
+        errorsInSuites = [anything2int(ts.params['errors']) for ts in self.params['testSuites']]
+        errorsInSuites = [errors for errors in errorsInSuites if errors is not None]
+        self.params['errors'] = sum(errorsInSuites)

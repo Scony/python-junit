@@ -32,3 +32,9 @@ class TestCase(object):
 
     def __str__(self):
         return str(self.params)
+
+
+    def _fillAttributes(self, attributes): # TODO: remove and use **
+        for attributeName in self.attributeNames:
+            if attributeName in attributes:
+                self.params[attributeName] = attributes[attributeName]
