@@ -10,6 +10,8 @@ class TestReport(object):
 
     class XmlDecodingFailure(Exception):
         pass
+    class MergeFailure(Exception):
+        pass
 
 
     def __init__(self, testSuites=None, **kwargs):
@@ -136,7 +138,13 @@ class TestReport(object):
 
 
     def merge(self, testReport):
-        raise NotImplementedError
+        testSuiteNames = [ts.params['name'] for ts in self.params['testSuites'] if ts.params['name'] is not None]
+        testSuitesToAdd = [ts for ts in testReport.params['testSuites'] if ts.params['name'] not in testSuiteNames]
+        testSuitesToMerge = [ts for ts in testReport.params['testSuites'] if ts.params['name'] in testSuiteNames]
+
+        self.params['testSuites'] += testSuitesToAdd
+        [intTs.merge(extTs) for intTs in self.params['testSuites'] for extTs in testSuitesToMerge if
+         intTs.params['name'] == extTs.params['name']]
 
 
     def __str__(self):

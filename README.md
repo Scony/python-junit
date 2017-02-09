@@ -77,7 +77,5 @@ $ make test
 TODO:
 -----
 
-* decoding from XML to `TestReport` object + child objects
-* merging multiple `TestReport` to one
 * illegal characters filtering
 * refactoring

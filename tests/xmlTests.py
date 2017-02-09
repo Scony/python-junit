@@ -6,6 +6,8 @@ import junit
 
 class TestXmlCoding(unittest.TestCase):
 
+    maxDiff = None
+
     def testSimpleEncoding1(self):
         tr = junit.TestReport(name='xyz')
         xml = tr.toXml()
@@ -364,8 +366,148 @@ class TestXmlCoding(unittest.TestCase):
         self.assertEqual(tr1.toRawData(), tr2.toRawData())
 
 
-    # TODO: merge
-    # TODO: decode-merge-check
+    def testMerging1(self):
+        tr1 = junit.TestReport([
+            junit.TestSuite([
+                junit.TestCase(skipped='yes'),
+                junit.TestCase(failure='some_fail', failure_message='###'),
+                junit.TestCase(error='some_err', error_message='xyz'),
+                junit.TestCase(systemOut='some_sout', systemErr='some_serr'),
+            ], name='tr1ts1'),
+            junit.TestSuite([
+                junit.TestCase(skipped='yes'),
+                junit.TestCase(failure='some_fail'),
+                junit.TestCase(failure='some_fail', failure_message='???'),
+                junit.TestCase(error='some_err'),
+                junit.TestCase(error='some_err'),
+                junit.TestCase(error='some_err'),
+            ], name='tr1ts2'),
+        ])
+        tr1raw = tr1.toRawData()
+        tr2 = junit.TestReport([
+            junit.TestSuite([
+                junit.TestCase(skipped='yes'),
+                junit.TestCase(failure='some_fail', failure_message='###'),
+                junit.TestCase(error='some_err', error_message='xyz'),
+                junit.TestCase(systemOut='some_sout', systemErr='some_serr'),
+            ], name='tr2ts1'),
+            junit.TestSuite([
+                junit.TestCase(skipped='yes'),
+                junit.TestCase(failure='some_fail'),
+                junit.TestCase(failure='some_fail', failure_message='???'),
+                junit.TestCase(error='some_err'),
+                junit.TestCase(error='some_err'),
+                junit.TestCase(error='some_err'),
+            ], name='tr2ts2'),
+        ])
+        tr2raw = tr2.toRawData()
+        expectedRaw = tr1raw
+        expectedRaw['testSuites'] += tr2raw['testSuites']
+        tr1.merge(tr2)
+        self.assertEqual(tr1.toRawData(), expectedRaw)
+
+
+    def testMerging2(self):
+        tr1 = junit.TestReport([
+            junit.TestSuite([
+                junit.TestCase(skipped='yes'),
+                junit.TestCase(failure='some_fail', failure_message='###'),
+                junit.TestCase(error='some_err', error_message='xyz'),
+                junit.TestCase(systemOut='some_sout', systemErr='some_serr'),
+            ], name='common'),
+            junit.TestSuite([
+                junit.TestCase(skipped='yes'),
+                junit.TestCase(failure='some_fail'),
+                junit.TestCase(failure='some_fail', failure_message='???'),
+                junit.TestCase(error='some_err'),
+                junit.TestCase(error='some_err'),
+                junit.TestCase(error='some_err'),
+            ], name='tr1ts2'),
+        ])
+        tr1raw = tr1.toRawData()
+        tr2 = junit.TestReport([
+            junit.TestSuite([
+                junit.TestCase(skipped='sure'),
+            ], name='common'),
+            junit.TestSuite([
+                junit.TestCase(skipped='yes'),
+                junit.TestCase(failure='some_fail'),
+                junit.TestCase(failure='some_fail', failure_message='???'),
+                junit.TestCase(error='some_err'),
+                junit.TestCase(error='some_err'),
+                junit.TestCase(error='some_err'),
+            ], name='tr2ts2'),
+        ])
+        tr2raw = tr2.toRawData()
+        expectedRaw = tr1raw
+        expectedRaw['testSuites'] += [tr2raw['testSuites'][1]]
+        expectedRaw['testSuites'][0]['testCases'] += tr2raw['testSuites'][0]['testCases']
+        tr1.merge(tr2)
+        self.assertEqual(tr1.toRawData(), expectedRaw)
+
+
+    def testMerging3(self):
+        tr1 = junit.TestReport([
+            junit.TestSuite([
+                junit.TestCase(name='some', skipped='yes'),
+                junit.TestCase(failure='some_fail', failure_message='###'),
+                junit.TestCase(error='some_err', error_message='xyz'),
+                junit.TestCase(systemOut='some_sout', systemErr='some_serr'),
+            ], name='common'),
+            junit.TestSuite([
+                junit.TestCase(skipped='yes'),
+                junit.TestCase(failure='some_fail'),
+                junit.TestCase(failure='some_fail', failure_message='???'),
+                junit.TestCase(error='some_err'),
+                junit.TestCase(error='some_err'),
+                junit.TestCase(error='some_err'),
+            ], name='tr1ts2'),
+        ])
+        tr1raw = tr1.toRawData()
+        tr2 = junit.TestReport([
+            junit.TestSuite([
+                junit.TestCase(name='some', skipped='sure'),
+            ], name='common'),
+            junit.TestSuite([
+                junit.TestCase(skipped='yes'),
+                junit.TestCase(failure='some_fail'),
+                junit.TestCase(failure='some_fail', failure_message='???'),
+                junit.TestCase(error='some_err'),
+                junit.TestCase(error='some_err'),
+                junit.TestCase(error='some_err'),
+            ], name='tr2ts2'),
+        ])
+        tr2raw = tr2.toRawData()
+        expectedRaw = tr1raw
+        expectedRaw['testSuites'] += [tr2raw['testSuites'][1]]
+        expectedRaw['testSuites'][0]['testCases'][0] = tr2raw['testSuites'][0]['testCases'][0]
+        tr1.merge(tr2)
+        self.assertEqual(tr1.toRawData(), expectedRaw)
+
+
+    def testEncodeDecodeMerge(self):
+        tr1 = junit.TestReport([
+            junit.TestSuite([
+                junit.TestCase(skipped='yes'),
+            ]),
+        ])
+        tr1raw = tr1.toRawData()
+        tr2 = junit.TestReport([
+            junit.TestSuite([
+                junit.TestCase(skipped='sure'),
+            ]),
+        ])
+        tr2raw = tr2.toRawData()
+        expectedRaw = tr1raw
+        expectedRaw['testSuites'] += tr2raw['testSuites']
+        xml1 = tr1.toXml()
+        xml2 = tr2.toXml()
+        decodedTr1 = junit.TestReport()
+        decodedTr1.fromXml(xml1)
+        decodedTr2 = junit.TestReport()
+        decodedTr2.fromXml(xml2)
+        decodedTr1.merge(decodedTr2)
+        self.assertEqual(decodedTr1.toRawData(), expectedRaw)
 
 
 if __name__ == '__main__':
