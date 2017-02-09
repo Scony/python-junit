@@ -137,14 +137,17 @@ class TestReport(object):
         self._recalculateParams()
 
 
-    def merge(self, testReport):
+    def merge(self, testReport, recalculate=True):
         testSuiteNames = [ts.params['name'] for ts in self.params['testSuites'] if ts.params['name'] is not None]
         testSuitesToAdd = [ts for ts in testReport.params['testSuites'] if ts.params['name'] not in testSuiteNames]
         testSuitesToMerge = [ts for ts in testReport.params['testSuites'] if ts.params['name'] in testSuiteNames]
 
         self.params['testSuites'] += testSuitesToAdd
-        [intTs.merge(extTs) for intTs in self.params['testSuites'] for extTs in testSuitesToMerge if
+        [intTs.merge(extTs, recalculate) for intTs in self.params['testSuites'] for extTs in testSuitesToMerge if
          intTs.params['name'] == extTs.params['name']]
+
+        if recalculate:
+            self._recalculateParams()
 
 
     def __str__(self):

@@ -34,7 +34,7 @@ class TestSuite(object):
         self.params.update(kwargs)
 
 
-    def merge(self, testSuite):
+    def merge(self, testSuite, recalculate=True):
         testCaseNames = [tc.params['name'] for tc in self.params['testCases'] if tc.params['name'] is not None]
         testCasesToAdd = [tc for tc in testSuite.params['testCases'] if tc.params['name'] not in testCaseNames]
         testCasesToMerge = [tc for tc in testSuite.params['testCases'] if tc.params['name'] in testCaseNames]
@@ -44,6 +44,9 @@ class TestSuite(object):
             for extTc in testCasesToMerge:
                 if self.params['testCases'][i].params['name'] == extTc.params['name']:
                     self.params['testCases'][i] = extTc
+
+        if recalculate:
+            self._recalculateParams()
 
 
     def __str__(self):

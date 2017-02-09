@@ -403,7 +403,7 @@ class TestXmlCoding(unittest.TestCase):
         tr2raw = tr2.toRawData()
         expectedRaw = tr1raw
         expectedRaw['testSuites'] += tr2raw['testSuites']
-        tr1.merge(tr2)
+        tr1.merge(tr2, recalculate=False)
         self.assertEqual(tr1.toRawData(), expectedRaw)
 
 
@@ -442,7 +442,7 @@ class TestXmlCoding(unittest.TestCase):
         expectedRaw = tr1raw
         expectedRaw['testSuites'] += [tr2raw['testSuites'][1]]
         expectedRaw['testSuites'][0]['testCases'] += tr2raw['testSuites'][0]['testCases']
-        tr1.merge(tr2)
+        tr1.merge(tr2, recalculate=False)
         self.assertEqual(tr1.toRawData(), expectedRaw)
 
 
@@ -481,7 +481,7 @@ class TestXmlCoding(unittest.TestCase):
         expectedRaw = tr1raw
         expectedRaw['testSuites'] += [tr2raw['testSuites'][1]]
         expectedRaw['testSuites'][0]['testCases'][0] = tr2raw['testSuites'][0]['testCases'][0]
-        tr1.merge(tr2)
+        tr1.merge(tr2, recalculate=False)
         self.assertEqual(tr1.toRawData(), expectedRaw)
 
 
@@ -506,8 +506,28 @@ class TestXmlCoding(unittest.TestCase):
         decodedTr1.fromXml(xml1)
         decodedTr2 = junit.TestReport()
         decodedTr2.fromXml(xml2)
-        decodedTr1.merge(decodedTr2)
+        decodedTr1.merge(decodedTr2, recalculate=False)
         self.assertEqual(decodedTr1.toRawData(), expectedRaw)
+
+
+    def testRecalculationAfterMerge(self):
+        tr1 = junit.TestReport([
+            junit.TestSuite([
+                junit.TestCase(skipped='yes'),
+            ]),
+        ])
+        tr1raw = tr1.toRawData()
+        tr2 = junit.TestReport([
+            junit.TestSuite([
+                junit.TestCase(skipped='sure'),
+            ]),
+        ])
+        tr2raw = tr2.toRawData()
+        expectedRaw = tr1raw
+        expectedRaw['testSuites'] += tr2raw['testSuites']
+        expectedRaw['tests'] = 2
+        tr1.merge(tr2)
+        self.assertEqual(tr1.toRawData(), expectedRaw)
 
 
 if __name__ == '__main__':
