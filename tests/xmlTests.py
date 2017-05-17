@@ -2,23 +2,25 @@ import unittest
 import re
 
 import junit
+from junit.utils import forceUnicode
+
+try:
+    unichr                      # python2
+except NameError:
+    unichr = chr                # python3
 
 
 class TestXmlCoding(unittest.TestCase):
 
-    maxDiff = None
-
     def testSimpleEncoding1(self):
         tr = junit.TestReport(name='xyz')
         xml = tr.toXml()
-        xml = xml.decode('utf-8')
         self.assertEqual('<testsuites' in xml, True)
         self.assertEqual('name="xyz"' in xml, True)
 
     def testSimpleEncoding2(self):
         tr = junit.TestReport(name='xyz')
         xml = tr.toXml()
-        xml = xml.decode('utf-8')
         self.assertEqual('<testsuites' in xml, True)
         self.assertEqual('name="xyz"' in xml, True)
         self.assertEqual('time="' not in xml, True)
@@ -31,7 +33,6 @@ class TestXmlCoding(unittest.TestCase):
                               tests=5,
                               errors='24')
         xml = tr.toXml()
-        xml = xml.decode('utf-8')
         self.assertEqual('<testsuites' in xml, True)
         self.assertEqual('name="xyz"' in xml, True)
         self.assertEqual('time="1.1' in xml, True)
@@ -42,7 +43,6 @@ class TestXmlCoding(unittest.TestCase):
         tss = [junit.TestSuite() for _ in range(3)]
         tr = junit.TestReport(tss, name='xyz')
         xml = tr.toXml()
-        xml = xml.decode('utf-8')
         self.assertEqual('<testsuites' in xml, True)
         self.assertEqual('name="xyz"' in xml, True)
         self.assertEqual(len(re.findall('<testsuite ', xml)), 3)
@@ -54,7 +54,6 @@ class TestXmlCoding(unittest.TestCase):
             junit.TestSuite(name='ccc', time=21),
         ], name='xyz')
         xml = tr.toXml()
-        xml = xml.decode('utf-8')
         self.assertEqual('<testsuites' in xml, True)
         self.assertEqual('name="xyz"' in xml, True)
         self.assertEqual('name="aaa"' in xml, True)
@@ -72,7 +71,6 @@ class TestXmlCoding(unittest.TestCase):
             junit.TestSuite(time=10),
         ], name='xyz')
         xml = tr.toXml()
-        xml = xml.decode('utf-8')
         self.assertEqual('<testsuites' in xml, True)
         self.assertEqual('name="xyz"' in xml, True)
         self.assertEqual('tests="5"' in xml, True)
@@ -96,7 +94,6 @@ class TestXmlCoding(unittest.TestCase):
             ]),
         ], name='xyz')
         xml = tr.toXml()
-        xml = xml.decode('utf-8')
         self.assertEqual('<testsuites' in xml, True)
         self.assertEqual('name="xyz"' in xml, True)
         self.assertEqual(len(re.findall('<testsuite ', xml)), 2)
@@ -114,7 +111,6 @@ class TestXmlCoding(unittest.TestCase):
             ], name='ts2'),
         ], name='xyz')
         xml = tr.toXml()
-        xml = xml.decode('utf-8')
         self.assertEqual('<testsuites' in xml, True)
         self.assertEqual('name="xyz"' in xml, True)
         self.assertEqual('name="ts2"' in xml, True)
@@ -137,7 +133,6 @@ class TestXmlCoding(unittest.TestCase):
             ], name='ts2'),
         ], name='xyz')
         xml = tr.toXml()
-        xml = xml.decode('utf-8')
         self.assertEqual('<testsuites' in xml, True)
         self.assertEqual('name="xyz"' in xml, True)
         self.assertEqual('name="ts2"' in xml, True)
@@ -170,7 +165,6 @@ class TestXmlCoding(unittest.TestCase):
             ]),
         ])
         xml = tr.toXml()
-        xml = xml.decode('utf-8')
         self.assertEqual(len(re.findall('<testsuites ', xml)), 1)
         self.assertEqual(len(re.findall('<testsuite ', xml)), 2)
         self.assertEqual(len(re.findall('<testcase', xml)), 10)
@@ -198,7 +192,6 @@ class TestXmlCoding(unittest.TestCase):
             ]),
         ])
         xml = tr.toXml()
-        xml = xml.decode('utf-8')
         self.assertEqual(len(re.findall('yes', xml)), 2)
         self.assertEqual(len(re.findall('some_fail', xml)), 3)
         self.assertEqual(len(re.findall('some_err', xml)), 4)
@@ -220,7 +213,6 @@ class TestXmlCoding(unittest.TestCase):
             ]),
         ])
         xml = tr.toXml()
-        xml = xml.decode('utf-8')
         self.assertEqual(len(re.findall('some_fail', xml)), 1)
         self.assertEqual(len(re.findall('message="msg"', xml)), 1)
         self.assertEqual(len(re.findall('type="type"', xml)), 1)
@@ -236,7 +228,6 @@ class TestXmlCoding(unittest.TestCase):
             ]),
         ])
         xml = tr.toXml()
-        xml = xml.decode('utf-8')
         self.assertEqual(len(re.findall('message="msg"', xml)), 1)
         self.assertEqual(len(re.findall('type="type"', xml)), 1)
         self.assertEqual(len(re.findall('<testsuites ', xml)), 1)
@@ -251,7 +242,6 @@ class TestXmlCoding(unittest.TestCase):
             ]),
         ])
         xml = tr.toXml()
-        xml = xml.decode('utf-8')
         self.assertEqual(len(re.findall('some_err', xml)), 1)
         self.assertEqual(len(re.findall('message="msg"', xml)), 1)
         self.assertEqual(len(re.findall('type="type"', xml)), 1)
@@ -267,7 +257,6 @@ class TestXmlCoding(unittest.TestCase):
             ]),
         ])
         xml = tr.toXml()
-        xml = xml.decode('utf-8')
         self.assertEqual(len(re.findall('message="msg"', xml)), 1)
         self.assertEqual(len(re.findall('type="type"', xml)), 1)
         self.assertEqual(len(re.findall('<testsuites ', xml)), 1)
@@ -528,6 +517,58 @@ class TestXmlCoding(unittest.TestCase):
         expectedRaw['tests'] = 2
         tr1.merge(tr2)
         self.assertEqual(tr1.toRawData(), expectedRaw)
+
+
+    def testUTF8LegalCharacters(self):
+        tr = junit.TestReport([
+            junit.TestSuite([
+                junit.TestCase(skipped='yes', name=forceUnicode('Szaweł', encoding='utf-8')),
+            ], name=forceUnicode('Gaweł', encoding='utf-8')),
+        ], name=forceUnicode('Paweł', encoding='utf-8'))
+        xml = tr.toXml(encoding='utf-8')
+        self.assertEqual('<testsuites' in xml, True)
+        self.assertEqual(forceUnicode('Paweł', encoding='utf-8') in xml, True)
+        self.assertEqual(forceUnicode('Gaweł', encoding='utf-8') in xml, True)
+        self.assertEqual(forceUnicode('Szaweł', encoding='utf-8') in xml, True)
+
+
+    def testUTF8LegalCharacters2(self):
+        tr = junit.TestReport([
+            junit.TestSuite([
+                junit.TestCase(skipped='yes', name=forceUnicode('Szaweł', encoding='utf-8')),
+            ], name=forceUnicode('Gaweł', encoding='utf-8')),
+        ], name=forceUnicode('Paweł', encoding='utf-8'))
+        xml = tr.toXml(prettyPrint=True, encoding='utf-8')
+        self.assertEqual('<testsuites' in xml, True)
+        self.assertEqual(forceUnicode('Paweł', encoding='utf-8') in xml, True)
+        self.assertEqual(forceUnicode('Gaweł', encoding='utf-8') in xml, True)
+        self.assertEqual(forceUnicode('Szaweł', encoding='utf-8') in xml, True)
+
+
+    def testUTF8IllegalCharacters(self):
+        tr = junit.TestReport([
+            junit.TestSuite([
+                junit.TestCase(skipped='yes', name=u'xx' + unichr(0x0) + u'xx'),
+            ], name=u'yy' + unichr(0xfdd0) + u'yy'),
+        ], name=u'zz' + unichr(0x1fffe) + u'zz')
+        xml = tr.toXml(encoding='utf-8')
+        self.assertEqual('<testsuites' in xml, True)
+        self.assertEqual('xxxx' in xml, True)
+        self.assertEqual('yyyy' in xml, True)
+        self.assertEqual('zzzz' in xml, True)
+
+
+    def testUTF8IllegalCharacters2(self):
+        tr = junit.TestReport([
+            junit.TestSuite([
+                junit.TestCase(skipped='yes', name=u'xx' + unichr(0x0) + u'xx'),
+            ], name=u'yy' + unichr(0xfdd0) + u'yy'),
+        ], name=u'zz' + unichr(0x1fffe) + u'zz')
+        xml = tr.toXml(prettyPrint=True, encoding='utf-8')
+        self.assertEqual('<testsuites' in xml, True)
+        self.assertEqual('xxxx' in xml, True)
+        self.assertEqual('yyyy' in xml, True)
+        self.assertEqual('zzzz' in xml, True)
 
 
 if __name__ == '__main__':

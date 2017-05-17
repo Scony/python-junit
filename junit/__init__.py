@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Based on:
 * Personal expiriences with JUnit Jenkins Plugin

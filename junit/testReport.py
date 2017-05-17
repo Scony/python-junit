@@ -3,6 +3,7 @@ import xml.dom.minidom as MD
 
 from .testSuite import TestSuite
 from .testCase import TestCase
+from .utils import forceUnicode, cleanIllegalXmlChars
 
 
 class TestReport(object):
@@ -69,34 +70,41 @@ class TestReport(object):
         return testReportData
 
 
-    def toXml(self, prettyPrint=False):
-        testsuitesAttrib = dict([(key, str(val)) for key, val in self.params.items() if
+    def toXml(self, prettyPrint=False, encoding=None):
+        testsuitesAttrib = dict([(key, forceUnicode(val, encoding)) for key, val in self.params.items() if
                                  key in self.attributeNames and
                                  val is not None])
         testsuitesNode = ET.Element('testsuites', attrib=testsuitesAttrib)
         for testSuite in self.params['testSuites']:
-            testsuiteAttrib = dict([(key, str(val)) for key, val in testSuite.params.items() if
+            testsuiteAttrib = dict([(key, forceUnicode(val, encoding)) for key, val in testSuite.params.items() if
                                     key in testSuite.attributeNames and
                                     val is not None])
             testsuiteNode = ET.SubElement(testsuitesNode, 'testsuite', attrib=testsuiteAttrib)
             for testCase in testSuite.params['testCases']:
-                testcaseAttrib = dict([(key, str(val)) for key, val in testCase.params.items() if
+                testcaseAttrib = dict([(key, forceUnicode(val, encoding)) for key, val in testCase.params.items() if
                                        key in testCase.attributeNames and
                                        val is not None])
                 testcaseNode = ET.SubElement(testsuiteNode, 'testcase', attrib=testcaseAttrib)
                 for childName in testCase.childNames.keys():
-                    childAttrib = dict([(key.split('_')[1], str(val)) for key, val in testCase.params.items() if
+                    childAttrib = dict([(key.split('_')[1], forceUnicode(val, encoding)) for key, val in
+                                        testCase.params.items() if
                                         key.startswith('%s_' % childName) and
                                         val is not None])
                     if testCase.params[childName] is not None or len(childAttrib.items()) > 0:
                         childNode = ET.SubElement(testcaseNode, testCase.childNames[childName], attrib=childAttrib)
-                        childNode.text = str(testCase.params[childName])
+                        childNode.text = forceUnicode((testCase.params[childName]), encoding)
 
-        uglyXml = ET.tostring(testsuitesNode, encoding='utf8')
+        uglyXml = ET.tostring(testsuitesNode, encoding=encoding)
+        uglyXml = uglyXml.decode(encoding or 'utf-8')
+        uglyXml = cleanIllegalXmlChars(uglyXml)
 
         if prettyPrint:
+            uglyXml = uglyXml.encode(encoding or 'utf-8')
             xml = MD.parseString(uglyXml)
-            return xml.toprettyxml()
+            xml = xml.toprettyxml(encoding=encoding)
+            if encoding:
+                xml = xml.decode(encoding or 'utf-8')
+            return xml
 
         return uglyXml
 
