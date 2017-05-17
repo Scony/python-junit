@@ -109,9 +109,10 @@ class TestReport(object):
         return uglyXml
 
 
-    def fromXml(self, xmlStr):
+    def fromXml(self, xmlStr, encoding=None):
         self._clearAttributes()
 
+        xmlStr = xmlStr.encode(encoding or 'utf-8')
         root = ET.fromstring(xmlStr)
         if root.tag != 'testsuites':
             raise self.XmlDecodingFailure

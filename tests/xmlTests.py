@@ -571,5 +571,20 @@ class TestXmlCoding(unittest.TestCase):
         self.assertEqual('zzzz' in xml, True)
 
 
+    def testUTF8EncodingDecodingEncoding(self):
+        tr = junit.TestReport([
+            junit.TestSuite([
+                junit.TestCase(skipped='yes', name=forceUnicode('Szaweł', encoding='utf-8')),
+            ], name=forceUnicode('Gaweł', encoding='utf-8')),
+        ], name=forceUnicode('Paweł', encoding='utf-8'))
+        xml = tr.toXml(encoding='utf-8')
+        tr2 = junit.TestReport()
+        tr2.fromXml(xml)
+        xml = tr2.toXml(encoding='utf-8')
+        self.assertEqual(forceUnicode('Paweł', encoding='utf-8') in xml, True)
+        self.assertEqual(forceUnicode('Gaweł', encoding='utf-8') in xml, True)
+        self.assertEqual(forceUnicode('Szaweł', encoding='utf-8') in xml, True)
+
+
 if __name__ == '__main__':
     unittest.main()
