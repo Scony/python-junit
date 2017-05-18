@@ -1,6 +1,5 @@
 import re
 import sys
-from six import PY2, u
 
 try:
     unichr                      # python2
@@ -11,7 +10,7 @@ except NameError:
 # taken from https://github.com/kyrus/python-junit-xml/blob/master/junit_xml/__init__.py
 def forceUnicode(var, encoding=None):
     """If not already unicode, decode it"""
-    if PY2:
+    if sys.version_info < (3,0):
         if isinstance(var, unicode):
             ret = var
         elif isinstance(var, str):
@@ -59,6 +58,6 @@ def cleanIllegalXmlChars(stringToClean):
     illegalRanges = ["%s-%s" % (unichr(low), unichr(high))
                      for (low, high) in illegalUnichrRanges
                      if low < sys.maxunicode]
-    illegalXmlRegex = re.compile(u('[%s]') % u('').join(illegalRanges))
+    illegalXmlRegex = re.compile(u'[%s]' % u''.join(illegalRanges))
 
     return illegalXmlRegex.sub('', stringToClean)

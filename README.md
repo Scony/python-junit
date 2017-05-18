@@ -77,5 +77,4 @@ $ make test
 TODO:
 -----
 
-* illegal characters filtering
 * refactoring
